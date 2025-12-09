@@ -42,7 +42,7 @@ async def close_nats():
     global connection, is_connected
     if connection is not None:
         try:
-            await connection.drain()
+            await connection.drain() # корректно закрыть соединение
         except Exception:
             pass
     connection = None
@@ -54,6 +54,7 @@ async def publish_event(event: dict):
     if not is_connected or connection is None:
         return False
     try:
+        # асинхронно публикуем сообщение в канал SUBJECT
         await connection.publish(SUBJECT, json.dumps(event, default=str).encode())
         return True
     except Exception as e:

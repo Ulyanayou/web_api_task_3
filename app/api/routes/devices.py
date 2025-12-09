@@ -5,6 +5,8 @@ from sqlmodel import select
 from app.db.session import get_db
 from app.models.device import Device, DeviceCreate, DeviceUpdate
 from app.models.check import CheckResult, CheckCreate
+
+from fastapi import Request
 from app.nats.client import publish_event
 from app.ws.manager import ws_manager
 
@@ -32,7 +34,21 @@ async def get_device(device_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/", response_model=Device, status_code=201)
-async def create_device(item: DeviceCreate, db: AsyncSession = Depends(get_db)):
+async def create_device(
+    item: DeviceCreate,
+    db: AsyncSession = Depends(get_db),
+    request: Request = None
+):
+    # Проверка на лишние поля
+    data = await request.json() if request else item.dict()
+    allowed_fields = set(DeviceCreate.__fields__.keys())
+    extra_fields = set(data.keys()) - allowed_fields
+    if extra_fields:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unexpected fields: {', '.join(extra_fields)}"
+        )
+    
     device = Device(**item.dict()) # создание модели из схемы
     db.add(device)
     await db.commit()

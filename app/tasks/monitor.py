@@ -13,7 +13,7 @@ from app.ws.manager import ws_manager
 # Глобальная ссылка на текущую фоновую задачу
 _bg_task: Optional[asyncio.Task] = None
 
-# Период мониторинга (в секундах): 1 час
+# Период мониторинга (в секундах)
 MONITOR_PERIOD_SECONDS = 60
 
 # Проверка доступности адреса HTTP-запросом и измерение задержки.
